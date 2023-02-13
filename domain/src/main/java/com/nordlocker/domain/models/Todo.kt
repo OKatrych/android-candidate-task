@@ -1,10 +1,12 @@
 package com.nordlocker.domain.models
 
+import java.time.LocalDateTime
+
 data class Todo(
-    val id: Int? = null,
-    val title: String? = null,
-    val completed: Boolean,
-    val createdAt: String,
-    val updatedAt: String,
-    val dueDate: String? = null
+    val id: Int,
+    val title: String,
+    val isCompleted: Boolean,
+    val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime,
+    val dueDate: LocalDateTime,
 )

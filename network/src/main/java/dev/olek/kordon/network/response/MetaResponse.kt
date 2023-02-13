@@ -1,10 +1,10 @@
-package com.nordlocker.android_task.network.response
+package dev.olek.kordon.network.response
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class MetaResponse(
+internal data class MetaResponse(
     @SerialName("pagination")
     val pagination: PaginationResponse
 ) {

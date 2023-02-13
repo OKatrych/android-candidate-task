@@ -1,17 +1,31 @@
 package com.nordlocker.storage.todo
 
-import com.nordlocker.domain.interfaces.TodoStorage
+import com.nordlocker.domain.interfaces.TodoStorageService
 import com.nordlocker.domain.models.Todo
-import com.nordlocker.storage.todo.TodoEntity.Companion.toEntity
+import com.nordlocker.storage.mapper.TodoEntityMapper
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
-class TodoStorageImpl(database: TodoDatabase): TodoStorage {
+// TODO: create test
+internal class TodoStorageImpl(
+    database: TodoDatabase,
+    private val todoEntityMapper: TodoEntityMapper,
+) : TodoStorageService {
 
     private val dao = database.todoDao()
 
     override suspend fun updateOrCreate(list: List<Todo>) {
-        dao.updateOrCreate(list.map { it.toEntity() })
+        dao.updateOrCreate(list.map(todoEntityMapper::mapToEntity))
     }
 
     override suspend fun getAll(): List<Todo> =
-        dao.getAll().map { it.toDomain() }
+        dao.getAll().map(todoEntityMapper::mapToTodoModel)
+
+    override fun observeAll(): Flow<List<Todo>> {
+        return dao.observeAll().map { it.map(todoEntityMapper::mapToTodoModel) }
+    }
+
+    override suspend fun getById(id: Int): Todo {
+        return todoEntityMapper.mapToTodoModel(dao.getById(id))
+    }
 }

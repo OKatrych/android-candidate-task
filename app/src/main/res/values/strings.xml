@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">android-task</string>
+    <string name="is_completed">Is completed</string>
 </resources>

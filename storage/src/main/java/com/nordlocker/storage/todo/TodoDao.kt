@@ -4,9 +4,10 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface TodoDao {
+internal interface TodoDao {
 
     companion object {
         const val TABLE_NAME = "todo"
@@ -17,4 +18,10 @@ interface TodoDao {
 
     @Query("SELECT * FROM $TABLE_NAME")
     suspend fun getAll(): List<TodoEntity>
+
+    @Query("SELECT * FROM $TABLE_NAME")
+    fun observeAll(): Flow<List<TodoEntity>>
+
+    @Query("SELECT * FROM $TABLE_NAME WHERE id=:id")
+    suspend fun getById(id: Int): TodoEntity
 }

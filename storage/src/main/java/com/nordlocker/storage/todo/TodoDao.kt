@@ -23,5 +23,5 @@ internal interface TodoDao {
     fun observeAll(): Flow<List<TodoEntity>>
 
     @Query("SELECT * FROM $TABLE_NAME WHERE id=:id")
-    suspend fun getById(id: Int): TodoEntity
+    fun observeById(id: Int): Flow<TodoEntity>
 }

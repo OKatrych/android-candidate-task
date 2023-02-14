@@ -3,6 +3,8 @@ package com.nordlocker.domain.util
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retryWhen
 
 fun <T> Flow<T>.retryWithPolicy(
@@ -21,3 +23,6 @@ fun <T> Flow<T>.retryWithPolicy(
         }
     }
 }
+
+fun <T> Flow<T>.asResult(): Flow<Result<T>> = map { Result.success(it) }
+    .catch { emit(Result.failure(it)) }

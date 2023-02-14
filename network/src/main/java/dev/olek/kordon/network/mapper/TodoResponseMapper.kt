@@ -5,7 +5,6 @@ import dev.olek.kordon.network.response.TodoResponse
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-// TODO: create test
 internal class TodoResponseMapper {
 
     companion object {
@@ -19,6 +18,7 @@ internal class TodoResponseMapper {
         requireNotNull(response.status)
         requireNotNull(response.dueOn)
 
+        // As we are not getting this value from the backend - let's generate it
         val creationDate = getRandomDateFromPast()
         val dueDate = LocalDateTime.parse(response.dueOn, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 

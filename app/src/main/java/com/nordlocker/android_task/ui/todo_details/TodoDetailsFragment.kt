@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.widget.doOnTextChanged
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -41,6 +41,12 @@ class TodoDetailsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.isCompleted.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.setCompleted(isChecked)
+        }
+        binding.todoText.doAfterTextChanged { text ->
+            text?.let { viewModel.onTodoTitleChange(it.toString()) }
+        }
         observeState()
     }
 
@@ -53,7 +59,7 @@ class TodoDetailsFragment : Fragment() {
                         is Error -> {
                             Toast.makeText(
                                 requireContext().applicationContext,
-                                "Error while loading toast: ${todoState.error.message}",
+                                "Error while loading todo: ${todoState.error.message}",
                                 Toast.LENGTH_LONG
                             ).show()
                         }
@@ -65,13 +71,11 @@ class TodoDetailsFragment : Fragment() {
     }
 
     private fun renderTodo(todo: Todo) {
-        binding.todoText.setText(todo.title)
+        binding.todoText.apply {
+            if (todo.title != text.toString()) {
+                setText(todo.title)
+            }
+        }
         binding.isCompleted.isChecked = todo.isCompleted
-        binding.isCompleted.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.setCompleted(isChecked)
-        }
-        binding.todoText.doOnTextChanged { text, start, before, count ->
-
-        }
     }
 }

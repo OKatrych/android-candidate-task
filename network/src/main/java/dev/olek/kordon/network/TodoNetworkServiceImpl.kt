@@ -10,7 +10,6 @@ import io.ktor.http.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
-// TODO: create test
 internal class TodoNetworkServiceImpl(
     private val client: ApiClient,
     private val todoResponseMapper: TodoResponseMapper

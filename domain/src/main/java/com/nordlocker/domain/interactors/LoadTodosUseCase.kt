@@ -6,11 +6,13 @@ import com.nordlocker.domain.models.Todo
 import com.nordlocker.domain.util.RetryPolicy
 import com.nordlocker.domain.util.retryWithPolicy
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import java.io.IOException
 
@@ -26,13 +28,13 @@ class LoadTodosUseCase(
 ) {
 
     fun loadTodos(): Flow<List<Todo>> = flow {
-        // Load available todos from the local storage
-        emit(todoStorage.getAll())
+        val networkScope = CoroutineScope(currentCoroutineContext())
 
         // Try to load the newest todos from the network and save them to local storage
+        // This is done asynchronously to allow retries on network issues
         getTodosFromNetwork().onEach {
             todoStorage.updateOrCreate(it)
-        }.collect()
+        }.launchIn(networkScope)
 
         // Subscribe for all storage changes
         emitAll(todoStorage.observeAll())

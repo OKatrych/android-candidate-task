@@ -5,56 +5,61 @@ import androidx.lifecycle.viewModelScope
 import com.nordlocker.domain.interactors.GetTodoUseCase
 import com.nordlocker.domain.interactors.UpdateTodoUseCase
 import com.nordlocker.domain.models.Todo
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.nordlocker.domain.util.asResult
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+private const val DEFAULT_TIMEOUT = 5000L
+
 class TodoDetailsViewModel(
-    private val todoId: Int,
-    private val getTodoUseCase: GetTodoUseCase,
+    todoId: Int,
+    getTodoUseCase: GetTodoUseCase,
     private val updateTodoUseCase: UpdateTodoUseCase,
 ) : ViewModel() {
 
-    private val mutableTodoState: MutableStateFlow<TodoState> = MutableStateFlow(TodoState.Loading)
-    val todoState: StateFlow<TodoState> = mutableTodoState.asStateFlow()
+    val todoState: StateFlow<TodoState> = getTodoUseCase.observeTodo(todoId)
+        .asResult()
+        .map { todoResult ->
+            if (todoResult.isSuccess) {
+                TodoState.Loaded(todoResult.getOrThrow())
+            } else {
+                TodoState.Error(todoResult.exceptionOrNull() ?: Exception("Unknown error"))
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = TodoState.Loading,
+            // Use timeout to avoid cancellation on screen rotation
+            started = SharingStarted.WhileSubscribed(DEFAULT_TIMEOUT)
+        )
 
-    init {
-        loadTodo(todoId)
-    }
+    private val todo: Flow<Todo> = todoState.filterIsInstance<TodoState.Loaded>().map { it.todo }
 
     fun setCompleted(isCompleted: Boolean) {
-        // NOTE: Not perfect but should work for this case
         viewModelScope.launch {
-            val todo = (mutableTodoState.value as? TodoState.Loaded)?.todo
-            if (todo != null) {
-                val updatedTodo = todo.copy(isCompleted = isCompleted)
-                // Update UI and not wait for the DB to update
-                mutableTodoState.update { currentState ->
-                    if (currentState is TodoState.Loaded) {
-                        currentState.copy(updatedTodo)
-                    } else {
-                        currentState
-                    }
-                }
-                updateTodoUseCase.updateTodo(updatedTodo)
-            }
+            updateTodoUseCase.updateTodo(
+                todo.first().copy(isCompleted = isCompleted)
+            )
         }
     }
 
-    private fun loadTodo(todoId: Int) {
+    fun onTodoTitleChange(newTitle: String) {
         viewModelScope.launch {
-            val todo = getTodoUseCase.getTodo(todoId)
-            mutableTodoState.update {
-                TodoState.Loaded(todo)
-            }
+            updateTodoUseCase.updateTodo(
+                todo.first().copy(title = newTitle)
+            )
         }
     }
 
     sealed class TodoState {
-        object Loading: TodoState()
-        data class Loaded(val todo: Todo): TodoState()
-        data class Error(val error: Throwable): TodoState()
+        object Loading : TodoState()
+        data class Loaded(val todo: Todo) : TodoState()
+        data class Error(val error: Throwable) : TodoState()
     }
 }

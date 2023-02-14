@@ -7,5 +7,5 @@ interface TodoStorageService {
     suspend fun updateOrCreate(list: List<Todo>)
     suspend fun getAll(): List<Todo>
     fun observeAll(): Flow<List<Todo>>
-    suspend fun getById(id: Int): Todo
+    fun observeById(id: Int): Flow<Todo>
 }

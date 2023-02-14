@@ -3,7 +3,6 @@ package com.nordlocker.storage.mapper
 import com.nordlocker.domain.models.Todo
 import com.nordlocker.storage.todo.TodoEntity
 
-// TODO: add tests
 internal class TodoEntityMapper {
 
     fun mapToEntity(todo: Todo): TodoEntity {

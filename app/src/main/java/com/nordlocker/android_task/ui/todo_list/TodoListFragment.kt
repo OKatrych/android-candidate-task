@@ -48,6 +48,7 @@ class TodoListFragment : Fragment() {
         }
         binding.sortButton.setOnClickListener {
             viewModel.changeSortingType()
+            binding.todoList.scrollToPosition(0)
         }
 
         observeState()

@@ -6,7 +6,6 @@ import com.nordlocker.storage.mapper.TodoEntityMapper
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-// TODO: create test
 internal class TodoStorageImpl(
     database: TodoDatabase,
     private val todoEntityMapper: TodoEntityMapper,
@@ -25,7 +24,7 @@ internal class TodoStorageImpl(
         return dao.observeAll().map { it.map(todoEntityMapper::mapToTodoModel) }
     }
 
-    override suspend fun getById(id: Int): Todo {
-        return todoEntityMapper.mapToTodoModel(dao.getById(id))
+    override fun observeById(id: Int): Flow<Todo> {
+        return dao.observeById(id).map(todoEntityMapper::mapToTodoModel)
     }
 }

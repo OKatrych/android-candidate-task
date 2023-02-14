@@ -28,17 +28,16 @@ class TodoListViewModel(
     private var sortingType: SortingType = SortingType.RecentlyCreated
 
     init {
-        loadTodos()
+        observeTodos()
     }
 
-    fun loadTodos() {
+    private fun observeTodos() {
         todosJob.cancelChildren()
-        loadTodosUseCase.loadTodos().onEach { todos ->
+        loadTodosUseCase.observeTodos().onEach { todos ->
             mutableTodoState.updateTodoState(sortingType) { todos }
         }.catch { error ->
             Timber.e(error, "Failed to load todos")
         }.launchIn(viewModelScope + todosJob)
-
     }
 
     fun changeSortingType() {

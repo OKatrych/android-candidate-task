@@ -44,21 +44,21 @@ class LoadTodosUseCaseTest {
 
     @Test
     fun testNetworkServiceIsCalled() = runTest {
-        useCase.loadTodos().collect()
+        useCase.observeTodos().collect()
         coVerify { networkService.getAll() }
     }
 
     @Test
     fun testNetworkTodosAreSaved() = runTest {
         coEvery { networkService.getAll() } returns testTodos
-        useCase.loadTodos().collect()
+        useCase.observeTodos().collect()
         coVerify { storageService.updateOrCreate(testTodos) }
     }
 
     @Test
     fun testTodosAreReturnedFromLocalStorage() = runTest {
         coEvery { storageService.observeAll() } returns flowOf(testTodos)
-        val returnedTodos = useCase.loadTodos().last()
+        val returnedTodos = useCase.observeTodos().last()
         assert(testTodos == returnedTodos)
     }
 

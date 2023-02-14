@@ -27,7 +27,7 @@ class LoadTodosUseCase(
     private val dispatcher: CoroutineDispatcher,
 ) {
 
-    fun loadTodos(): Flow<List<Todo>> = flow {
+    fun observeTodos(): Flow<List<Todo>> = flow {
         val networkScope = CoroutineScope(currentCoroutineContext())
 
         // Try to load the newest todos from the network and save them to local storage
